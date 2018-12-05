@@ -115,4 +115,14 @@ public class Matrix {
         }
         return result;
     }
+
+    public double average() {
+        double avg = 0;
+        for(int x = 0; x < xLength(); x++) {
+            for(int y = 0; y < yLength(x); y++) {
+                avg += getMatrix()[x][y];
+            }
+        }
+        return avg / (double)(xLength() * yLength());
+    }
 }

@@ -17,7 +17,9 @@ public class SimpleCalculator {
         Network network = Network.builder().learningDate(0.001d).iterations(100000)
                 .inputNeurons(3)
                 .addLayer(Layer.builder().neurons(10).function(Layer.FunctionType.TANH))
-                .addLayer(Layer.builder().neurons(15).function(Layer.FunctionType.TANH))
+                .addLayer(Layer.builder().neurons(10).function(Layer.FunctionType.TANH))
+                .addLayer(Layer.builder().neurons(10).function(Layer.FunctionType.TANH))
+                .addLayer(Layer.builder().neurons(10).function(Layer.FunctionType.TANH))
                 .addLayer(Layer.builder().neurons(10).function(Layer.FunctionType.TANH))
                 .addLayer(Layer.builder().neurons(1).function(Layer.FunctionType.TANH))      // Output neurons
                 .build();
@@ -94,11 +96,22 @@ public class SimpleCalculator {
                 }
                 
                 case 1: {
-                    double a = scanner.nextDouble();
-                    double b = scanner.nextDouble();
-                    double c = scanner.nextDouble();
+                    String line = scanner.next();
+                    double operator;
+                    String[] split;
+                    if(line.contains("+")) {
+                        operator = PLUS;
+                        split = line.split("\\+");
+                    } else if(line.contains("-")) {
+                        operator = MINUS;
+                        split = line.split("-");
+                    } else {
+                        throw new IllegalArgumentException("Unknown operator");
+                    }
+                    double a = Double.parseDouble(split[0].trim());
+                    double b = Double.parseDouble(split[1].trim());
     
-                    analyze(new double[][] { { a, b, c } }, network);
+                    analyze(new double[][] { { a, b, operator } }, network);
                     break;
                 }
             }
