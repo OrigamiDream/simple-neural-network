@@ -1,16 +1,9 @@
 package av.is.neuralnetwork;
 
-import avis.juikit.Juikit;
-
-import javax.swing.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Network {
-
-    private List<Double> diffs = new CopyOnWriteArrayList<>();
 
     private Layer[] layers;
     private Matrix[] oLayers;
@@ -38,37 +31,6 @@ public class Network {
             }
             prev = layers[i];
         }
-
-        Juikit.createFrame()
-                .antialiasing(true)
-                .title("Simple Neural Network")
-                .size(800, 1400)
-                .closeOperation(WindowConstants.EXIT_ON_CLOSE)
-                .repaintInterval(10)
-                .painter((juikit, graphics) -> {
-                    int count = juikit.width();
-                    List<Double> d = new CopyOnWriteArrayList<>(diffs);
-
-                    boolean first = true;
-                    double previous = -1;
-                    for(int i = d.size() - 1; i >= 0; i--) {
-                        count--;
-                        double value = d.get(i) * 1000;
-                        graphics.fillOval(count, (int) (juikit.height() - value), 2, 2);
-                        if(previous != -1) {
-                            graphics.drawLine(count + 1, (int) (juikit.height() - previous), count, (int) (juikit.height() - value));
-                        }
-                        if(first) {
-                            graphics.drawString(new BigDecimal(d.get(i)).toPlainString(), 50, 50);
-                            first = false;
-                        }
-                        previous = value;
-                        if(count == -1) {
-                            break;
-                        }
-                    }
-                })
-                .visibility(true);
     }
     
     public void think(double[][] input) {
@@ -80,9 +42,9 @@ public class Network {
             Layer layer = layers[i];
             
             if(i == 0) {
-                oLayers[i] = input.multiply(layer.weights).apply(layer.functionType.getFunction());
+                oLayers[i] = input.propagate(layer.weights).apply(layer.functionType.getFunction());
             } else {
-                oLayers[i] = oLayers[i - 1].multiply(layer.weights).apply(layer.functionType.getFunction());
+                oLayers[i] = oLayers[i - 1].propagate(layer.weights).apply(layer.functionType.getFunction());
             }
         }
     }
@@ -110,34 +72,29 @@ public class Network {
                 Matrix delta;
                 if(i == oLayers.length - 1) {
                     Matrix error = output.subtract(layer);
-                    diffs.add(error.average());
-                    delta = error.scalar(layer.apply(layers[i].functionType.getDerivative()));
+                    delta = error.multiply(layer.apply(layers[i].functionType.getDerivative()));
                 } else {
                     assert prev != null;
-                    Matrix error = prev.multiply(layers[i + 1].weights.transpose());
-                    delta = error.scalar(layer.apply(layers[i].functionType.getDerivative()));
+                    Matrix error = prev.propagate(layers[i + 1].weights.transpose());
+                    delta = error.multiply(layer.apply(layers[i].functionType.getDerivative()));
                 }
                 deltas[i] = delta;
                 prev = delta;
             }
 
-//            double sum = 0;
             for(int i = 0; i < deltas.length; i++) {
                 Matrix adjustment;
                 if(i == 0) {
-                    adjustment = input.transpose().multiply(deltas[i]);
+                    adjustment = input.transpose().propagate(deltas[i]);
                 } else {
-                    adjustment = oLayers[i - 1].transpose().multiply(deltas[i]);
+                    adjustment = oLayers[i - 1].transpose().propagate(deltas[i]);
                 }
                 adjustment = adjustment.apply(x -> learningRate * x);
-
-//                sum += adjustment.average();
                 layers[i].adjust(adjustment);
             }
-//            diffs.add(sum / (int) deltas.length);
             
             if(iteration % 5000 == 0) {
-//                System.out.println(" Training iteration " + iteration + " of " + iterations);
+                System.out.println(" Training iteration " + iteration + " of " + iterations);
             }
         }
     }

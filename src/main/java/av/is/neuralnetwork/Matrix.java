@@ -34,7 +34,7 @@ public class Matrix {
         matrix[x][y] = value;
     }
     
-    Matrix multiply(Matrix other) {
+    Matrix propagate(Matrix other) {
         if(xLength() == 0 || other.xLength() == 0 || yLength() != other.xLength()) {
             throw new IllegalArgumentException("Requires same matrix");
         }
@@ -88,9 +88,9 @@ public class Matrix {
         return result;
     }
     
-    Matrix scalar(Matrix other) {
+    Matrix multiply(Matrix other) {
         if(xLength() != other.xLength()) {
-            throw new IllegalArgumentException("Requires same scalar vectors");
+            throw new IllegalArgumentException("Requires same matrix");
         }
         
         Matrix result = new Matrix(xLength(), yLength());
@@ -114,15 +114,5 @@ public class Matrix {
             }
         }
         return result;
-    }
-
-    public double average() {
-        double avg = 0;
-        for(int x = 0; x < xLength(); x++) {
-            for(int y = 0; y < yLength(x); y++) {
-                avg += getMatrix()[x][y];
-            }
-        }
-        return avg / (double)(xLength() * yLength());
     }
 }
